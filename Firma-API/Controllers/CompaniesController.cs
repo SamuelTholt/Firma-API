@@ -36,7 +36,7 @@ public class CompaniesController : ControllerBase
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(CompanyDetailDto), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
-    public async Task<ActionResult<Company>> GetCompaniesById(int id)
+    public async Task<ActionResult<Company>> GetCompanyById(int id)
     {
         var company = await _context.Companies
            .Include(comp => comp.Director)
@@ -139,7 +139,7 @@ public class CompaniesController : ControllerBase
         _context.Companies.Add(company);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetCompaniesById), new { id = company.Id }, new CompanyDto(
+        return CreatedAtAction(nameof(GetCompanyById), new { id = company.Id }, new CompanyDto(
             company.Id,
             company.Name,
             company.Code,

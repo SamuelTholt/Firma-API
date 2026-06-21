@@ -16,6 +16,7 @@ public class DivisionsController : ControllerBase
 
     // GET: api/allDivisions
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<DivisionDto>), 200)]
     public async Task<ActionResult<IEnumerable<Division>>> GetAllDivisisons()
     {
         var divisions = await _context.Divisions
@@ -109,6 +110,9 @@ public class DivisionsController : ControllerBase
         if (division == null)
             return NotFound(new ErrorResponse($"Divízia s ID {id} neexistuje."));
 
+        if (await _context.Divisions.AnyAsync(c => c.Code == req.Code && c.Id != id))
+            return BadRequest(new ErrorResponse("Divízia s týmto kódom už existuje."));
+
         if (req.LeaderId.HasValue &&
             !await _context.Employees.AnyAsync(e => e.Id == req.LeaderId))
             return BadRequest(new ErrorResponse("Zadaný vedúci neexistuje."));
@@ -146,7 +150,7 @@ public class DivisionsController : ControllerBase
             return NotFound(new ErrorResponse($"Firma s ID {req.CompanyId} neexistuje."));
 
         if (req.LeaderId.HasValue &&
-            !await _context.Divisions.AnyAsync(e => e.Id == req.LeaderId))
+            !await _context.Employees.AnyAsync(e => e.Id == req.LeaderId))
             return BadRequest(new ErrorResponse("Zadaný vedúci neexistuje."));
 
         var division = new Division
