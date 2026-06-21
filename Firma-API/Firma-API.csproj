@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="10.0.9" />
+    <PackageReference Include="TeaPie" Version="1.7.0" />
   </ItemGroup>
 
 </Project>
