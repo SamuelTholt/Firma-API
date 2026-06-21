@@ -15,29 +15,11 @@ public class DepartmentsController : ControllerBase
         _context = context;
     }
 
-    // GET: api/allDepartments
+    // GET: api/Departments
+    // GET: api/Departments?projectId=1
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<DepartmentDto>), 200)]
-    public async Task<ActionResult<IEnumerable<Department>>> GetAllDepartments()
-    {
-        var depart = await _context.Departments
-            .Include(dep => dep.Leader)
-            .ToListAsync();
-
-        return Ok(depart.Select(dep => new DepartmentDto(
-            dep.Id,
-            dep.Name,
-            dep.Code,
-            dep.ProjectId,
-            dep.LeaderId,
-            dep.Leader != null ? $"{dep.Leader.FirstName} {dep.Leader.LastName}" : null
-            )));
-    }
-
-    // GET: api/allDepartments
-    [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<DepartmentDto>), 200)]
-    public async Task<ActionResult<IEnumerable<Department>>> GetAllDepartmentsByProjectId([FromQuery] int? projectId)
+    public async Task<ActionResult<IEnumerable<Department>>> GetAllDepartments([FromQuery] int? projectId)
     {
         var query = _context.Departments
             .Include(dep => dep.Leader)
@@ -90,7 +72,7 @@ public class DepartmentsController : ControllerBase
     [ProducesResponseType(typeof(DepartmentDto), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
-    public async Task<IActionResult> UpdateDepartment(int id, [FromQuery] UpdateDepartmentRequest req)
+    public async Task<IActionResult> UpdateDepartment(int id, [FromBody] UpdateDepartmentRequest req)
     {
 
         if (!ModelState.IsValid)

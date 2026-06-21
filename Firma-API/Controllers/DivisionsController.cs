@@ -14,29 +14,11 @@ public class DivisionsController : ControllerBase
         _context = context;
     }
 
-    // GET: api/allDivisions
+    // GET: api/Divisions
+    // GET: api/Divisions?companyId=1
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<DivisionDto>), 200)]
-    public async Task<ActionResult<IEnumerable<Division>>> GetAllDivisisons()
-    {
-        var divisions = await _context.Divisions
-            .Include(div => div.Leader)
-            .ToListAsync();
-
-        return Ok(divisions.Select(div => new DivisionDto(
-            div.Id,
-            div.Name,
-            div.Code,
-            div.CompanyId,
-            div.LeaderId,
-            div.Leader != null ? $"{div.Leader.FirstName} {div.Leader.LastName}" : null
-            )));
-    }
-
-    // GET: api/allDivisionsByCompany
-    [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<DivisionDto>), 200)]
-    public async Task<ActionResult<Division>> GetAllByCompanyId([FromQuery] int? companyId)
+    public async Task<ActionResult<IEnumerable<Division>>> GetAllDivisions([FromQuery] int? companyId)
     {
         var query = _context.Divisions
             .Include(div => div.Leader)
@@ -58,6 +40,7 @@ public class DivisionsController : ControllerBase
             div.Leader != null ? $"{div.Leader.FirstName} {div.Leader.LastName}" : null
         )));
     }
+
     // GET: api/Division/{id}
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(CompanyDetailDto), 200)]
@@ -98,7 +81,7 @@ public class DivisionsController : ControllerBase
     [ProducesResponseType(typeof(DivisionDto), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
-    public async Task<IActionResult> UpdateDivision(int id, [FromQuery] UpdateDivisionRequest req)
+    public async Task<IActionResult> UpdateDivision(int id, [FromBody] UpdateDivisionRequest req)
     {
         if (!ModelState.IsValid)
         {

@@ -14,28 +14,11 @@ public class EmployeesController : ControllerBase
         _context = context;
     }
 
-    // GET: api/allEmployees
+    // GET: api/Employees
+    // GET: api/Employees?companyId=1
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<EmployeeDto>), 200)]
-    public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetAllEmployees()
-    {
-        var employees = await _context.Employees.ToListAsync();
-
-        return Ok(employees.Select(emp => new EmployeeDto(
-            emp.Id,
-            emp.Title,
-            emp.FirstName,
-            emp.LastName,
-            emp.Phone,
-            emp.Email,
-            emp.CompanyId
-        )));
-    }
-
-    // GET: api/allEmployeesByCompany
-    [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<EmployeeDto>), 200)]
-    public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetAllByCompanyId([FromQuery] int? companyId)
+    public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetAllEmployees([FromQuery] int? companyId)
     {
         var query = _context.Employees.AsQueryable();
 
@@ -59,6 +42,7 @@ public class EmployeesController : ControllerBase
             emp.CompanyId
             )));
     }
+
     // GET: api/Employee/{id}
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(EmployeeDto), 200)]

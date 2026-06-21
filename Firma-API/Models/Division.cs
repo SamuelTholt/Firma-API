@@ -1,6 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-
-namespace Firma_API.Models
+﻿namespace Firma_API.Models
 {
     public class Division
     {

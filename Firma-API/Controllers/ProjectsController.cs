@@ -14,35 +14,17 @@ public class ProjectsController : ControllerBase
         _context = context;
     }
 
-    // GET: api/allProjects
+    // GET: api/Projects
+    // GET: api/Projects?divisionId=1
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<CompanyDto>), 200)]
-    public async Task<ActionResult<IEnumerable<Project>>> GetAllProjects()
-    {
-        var projects = await _context.Projects
-            .Include(proj => proj.Leader)
-            .ToArrayAsync();
-
-        return Ok(projects.Select(proj => new ProjectDto(
-            proj.Id,
-            proj.Name,
-            proj.Code,
-            proj.DivisionId,
-            proj.LeaderId,
-            proj.Leader != null ? $"{proj.Leader.FirstName} {proj.Leader.LastName}" : null
-            )));
-    }
-
-    // GET: api/allProjectsByDivisions
-    [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<CompanyDto>), 200)]
-    public async Task<ActionResult<IEnumerable<Project>>> GetAllProjectByDivisionId([FromQuery] int? divisionId)
+    [ProducesResponseType(typeof(IEnumerable<ProjectDto>), 200)]
+    public async Task<ActionResult<IEnumerable<Project>>> GetAllProjects([FromQuery] int? divisionId)
     {
         var query = _context.Projects
             .Include(proj => proj.Leader)
             .AsQueryable();
 
-        if(divisionId.HasValue)
+        if (divisionId.HasValue)
             query = query.Where(proj => proj.DivisionId == divisionId.Value);
 
         var projects = await query
@@ -99,7 +81,7 @@ public class ProjectsController : ControllerBase
     [ProducesResponseType(typeof(ProjectDto), 200)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
     [ProducesResponseType(typeof(ErrorResponse), 404)]
-    public async Task<IActionResult> UpdateProject(int id, [FromQuery] UpdateProjectRequest req)
+    public async Task<IActionResult> UpdateProject(int id, [FromBody] UpdateProjectRequest req)
     {
         if (!ModelState.IsValid)
         {
