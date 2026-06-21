@@ -1,3 +1,4 @@
+using Firma_API.Data;
 using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("CompanyApiDbContext") ?? throw new InvalidOperationException("Connection string 'CompanyApiDbContext' not found.");

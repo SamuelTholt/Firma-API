@@ -1,7 +1,8 @@
+using Firma_API.Data;
+using Firma_API.Dtos;
+using Firma_API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Firma_API.Models;
-using Firma_API.Data;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -13,87 +14,153 @@ public class CompaniesController : ControllerBase
         _context = context;
     }
 
-    // GET: api/Company
+    // GET: api/allCompanies
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Company>>> GetCompany()
+    [ProducesResponseType(typeof(IEnumerable<CompanyDto>), 200)]
+    public async Task<ActionResult<IEnumerable<Company>>> GetAllCompanies()
     {
-        return await _context.Companies.ToListAsync();
+        var companies = await _context.Companies
+           .Include(comp => comp.Director)
+           .ToListAsync();
+
+        return Ok(companies.Select(comp => new CompanyDto(
+            comp.Id,
+            comp.Name,
+            comp.Code,
+            comp.DirectorId,
+            comp.Director != null ? $"{comp.Director.FirstName} {comp.Director.LastName}" : null
+            )));
     }
 
-    // GET: api/Company/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Company>> GetCompany(int id)
+    // GET: api/Company/{id}
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(CompanyDetailDto), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    public async Task<ActionResult<Company>> GetCompaniesById(int id)
     {
-        var company = await _context.Companies.FindAsync(id);
+        var company = await _context.Companies
+           .Include(comp => comp.Director)
+           .Include(comp => comp.Divisions)
+           .ThenInclude(div => div.Leader)
+           .FirstOrDefaultAsync(comp => comp.Id == id);
 
         if (company == null)
         {
-            return NotFound();
+            return NotFound(new ErrorResponse($"Firma s ID {id} neexistuje!"));
         }
 
-        return company;
+
+        return Ok(new CompanyDetailDto(
+            company.Id,
+            company.Name,
+            company.Code,
+            company.DirectorId,
+            company.Director != null ? $"{company.Director.FirstName} {company.Director.LastName}" : null,
+            company.Divisions.Select(div => new DivisionDto(
+                div.Id,
+                div.Name,
+                div.Code,
+                div.CompanyId,
+                div.LeaderId,
+                div.Leader != null ? $"{div.Leader.FirstName} {div.Leader.LastName}" : null
+            ))
+        ));
     }
 
-    // PUT: api/Company/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutCompany(int? id, Company company)
+    // PUT: api/Company/{id}
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(typeof(CompanyDto), 200)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    public async Task<IActionResult> UpdateCompany(int id, [FromBody] UpdateCompanyRequest req)
     {
-        if (id != company.Id)
+        if (!ModelState.IsValid)
         {
-            return BadRequest();
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage);
+
+            return BadRequest(new ErrorResponse("Validácia zlyhala.", errors));
         }
 
-        _context.Entry(company).State = EntityState.Modified;
+        var comp = await _context.Companies.FindAsync(id);
+        if (comp == null)
+            return NotFound(new ErrorResponse($"Firma s ID {id} neexistuje."));
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!CompanyExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
+        if (await _context.Companies.AnyAsync(c => c.Code == req.Code && c.Id != id))
+            return BadRequest(new ErrorResponse("Firma s týmto kódom už existuje."));
 
-        return NoContent();
+        if (req.DirectorId.HasValue &&
+            !await _context.Employees.AnyAsync(e => e.Id == req.DirectorId))
+            return BadRequest(new ErrorResponse("Zadaný riaditeľ neexistuje."));
+
+
+        comp.Name = req.Name;
+        comp.Code = req.Code;
+        comp.DirectorId = req.DirectorId;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new CompanyDto(
+            comp.Id,
+            comp.Name,
+            comp.Code,
+            comp.DirectorId,
+            null
+        ));
     }
 
     // POST: api/Company
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Company>> PostCompany(Company company)
+    [ProducesResponseType(typeof(CompanyDto), 201)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    public async Task<ActionResult<Company>> CreateCompany(CreateCompanyRequest req)
     {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            return BadRequest(new ErrorResponse("Validácia zlyhala.", errors));
+        }
+
+        if (await _context.Companies.AnyAsync(c => c.Code == req.Code))
+            return BadRequest(new ErrorResponse("Firma s týmto kódom už existuje."));
+
+        if (req.DirectorId.HasValue &&
+            !await _context.Employees.AnyAsync(e => e.Id == req.DirectorId))
+            return BadRequest(new ErrorResponse("Zadaný riaditeľ neexistuje."));
+
+        var company = new Company
+        {
+            Name = req.Name,
+            Code = req.Code,
+            DirectorId = req.DirectorId
+        };
+
         _context.Companies.Add(company);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetCompany", new { id = company.Id }, company);
+        return CreatedAtAction(nameof(GetCompaniesById), new { id = company.Id }, new CompanyDto(
+            company.Id,
+            company.Name,
+            company.Code,
+            company.DirectorId,
+            null
+        ));
     }
 
-    // DELETE: api/Company/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCompany(int? id)
+    // DELETE: api/Company/{id}
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(typeof(ErrorResponse), 404)]
+    public async Task<IActionResult> DeleteCompany(int id)
     {
         var company = await _context.Companies.FindAsync(id);
         if (company == null)
-        {
-            return NotFound();
-        }
+            return NotFound(new ErrorResponse($"Firma s ID {id} neexistuje."));
 
         _context.Companies.Remove(company);
         await _context.SaveChangesAsync();
 
         return NoContent();
-    }
-
-    private bool CompanyExists(int? id)
-    {
-        return _context.Companies.Any(e => e.Id == id);
     }
 }
