@@ -1,0 +1,9 @@
+POST {{BaseUrl}}/api/Divisions
+Content-Type: application/json
+
+{
+  "name": "Divízia Technológií",
+  "code": "DIV-TECH",
+  "companyId": {{CompanyId}},
+  "leaderId": {{EmployeeId2}}
+}

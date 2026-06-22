@@ -1,0 +1,1 @@
+DELETE {{BaseUrl}}/api/Divisions/{{DivisionId}}

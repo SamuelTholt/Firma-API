@@ -1,0 +1,11 @@
+POST {{BaseUrl}}/api/Employees
+Content-Type: application/json
+
+{
+  "title": "Mgr.",
+  "firstName": "Eva",
+  "lastName": "Kováčová",
+  "phone": "+421900333444",
+  "email": "eva.kovacova@firma.sk",
+  "companyId": {{CompanyId}}
+}

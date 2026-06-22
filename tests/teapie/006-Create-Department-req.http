@@ -1,0 +1,9 @@
+POST {{BaseUrl}}/api/Departments
+Content-Type: application/json
+
+{
+  "name": "Oddelenie Vývoja",
+  "code": "DEP-DEV",
+  "projectId": {{ProjectId}},
+  "leaderId": {{EmployeeId}}
+}

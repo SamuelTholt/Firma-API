@@ -48,4 +48,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
+Console.WriteLine($"DB: {builder.Configuration.GetConnectionString("CompanyApiDbContext")}");
+
 app.Run();

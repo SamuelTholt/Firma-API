@@ -1,6 +1,0 @@
-@Firma_API_HostAddress = http://localhost:5000/api
-
-GET {{Firma_API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

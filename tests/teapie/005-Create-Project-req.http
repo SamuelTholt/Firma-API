@@ -1,0 +1,9 @@
+POST {{BaseUrl}}/api/Projects
+Content-Type: application/json
+
+{
+  "name": "Projekt Alpha",
+  "code": "PROJ-ALPHA",
+  "divisionId": {{DivisionId}},
+  "leaderId": {{EmployeeId}}
+}

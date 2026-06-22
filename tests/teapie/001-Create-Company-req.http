@@ -1,0 +1,8 @@
+POST {{BaseUrl}}/api/Companies
+Content-Type: application/json
+
+{
+  "name": "Testovacia Firma s.r.o.",
+  "code": "TF-001",
+  "directorId": null
+}
