@@ -74,7 +74,7 @@ Aplikácia počúva na `https://localhost:7066` alebo  `https://localhost:5286`.
 
 ## Scalar 
 
-Po spustení otvorte v prehliadači:
+Po spustení otvoriť v prehliadači:
 
 ```
 https://localhost:7066/scalar/v1
